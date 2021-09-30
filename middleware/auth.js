@@ -12,7 +12,7 @@ exports.auth = async (req, res, next) => {
         if(token && isCustomAuth){
             decodedData = jwt.verify(token, process.env.secret );
 
-            req.userId = (id == null ? null : decodedData.id);
+            req.userId = id == null ? null : decodedData.id;
         }else{
             decodedData = jwt.decode(token);
 
