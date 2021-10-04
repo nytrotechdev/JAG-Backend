@@ -21,6 +21,7 @@
     "express": "^4.17.1",
     "joi": "^17.4.2",
     "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
     "mongoose": "^5.12.2",
     "nodemailer": "^6.6.5",
     "paypal-rest-sdk": "^1.8.1"

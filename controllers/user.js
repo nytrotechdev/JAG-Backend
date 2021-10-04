@@ -24,9 +24,23 @@ exports.signin = async (req, res) => {
         const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
         if(!isPasswordCorrect) return res.status(200).json({message : "Invalid Credentials"})
 
-        const token = jwt.sign({ email: existingUser.email, id:existingUser._id },  process.env.secret, {expiresIn: "3h"} );
 
+        if(existingUser){
+            console.log(`existingUser`, existingUser, existingUser.UserTypeBool, existingUser.UserType);
+
+            const payDate = existingUser.paid_at
+
+            // const expiryDate = 
+
+            var oneYearFromNow = new Date();
+            oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
+        }
+
+
+        const token = jwt.sign({ email: existingUser.email, id:existingUser._id },  process.env.secret, {expiresIn: "3h"} );
         res.status(200).json({result : existingUser, token});
+
     } catch (error) {
         res.status(500).json({message : " Something went wrong", error})
     }
@@ -161,40 +175,6 @@ exports.getcreatedorder = async (req, res) => {
 
 exports.createorder = async (req, res) => {
 
-    // var webhook_json = {
-    //     url: 'https://jagapp.nytrotech.net/create-order-webhook',
-    //     event_types: [{
-    //       name: 'BILLING.SUBSCRIPTION.ACTIVATED'
-    //     },
-    //     {
-    //       name: 'BILLING.SUBSCRIPTION.UPDATED'
-    //     },
-    //     {
-    //       name: 'BILLING.SUBSCRIPTION.EXPIRED'
-    //     },
-    //     {
-    //       name: 'BILLING.SUBSCRIPTION.CANCELLED'
-    //     },
-    //     {
-    //       name: 'PAYMENT.ORDER.CREATED'
-    //     },
-    //     {
-    //       name: 'PAYMENT.CAPTURE.COMPLETED'
-    //     }
-    
-    
-    // ]
-    //   };
-
-    //   paypal.notification.webhook.create(webhook_json, function (error, webhook) {
-    //     if (error) {
-    //       console.error(JSON.stringify(error.response));
-    //       throw error;
-    //     } else {
-    //       console.log('Create webhook Response');
-    //       console.log(webhook);
-    //     }
-    //   });
 
 const Environment = process.env.NODE_ENV === "production" ? paypal.core.LiveEnvironment : paypal.core.SandboxEnvironment
 
@@ -275,6 +255,41 @@ console.log(`id`, id)
 exports.createorderwebhook = async (req, res) => {
 
         try {
+            
+    // var webhook_json = {
+    //     url: 'https://jagapp.nytrotech.net/create-order-webhook',
+    //     event_types: [{
+    //       name: 'BILLING.SUBSCRIPTION.ACTIVATED'
+    //     },
+    //     {
+    //       name: 'BILLING.SUBSCRIPTION.UPDATED'
+    //     },
+    //     {
+    //       name: 'BILLING.SUBSCRIPTION.EXPIRED'
+    //     },
+    //     {
+    //       name: 'BILLING.SUBSCRIPTION.CANCELLED'
+    //     },
+    //     {
+    //       name: 'PAYMENT.ORDER.CREATED'
+    //     },
+    //     {
+    //       name: 'PAYMENT.CAPTURE.COMPLETED'
+    //     }
+    
+    
+    // ]
+    //   };
+
+    //   paypal.notification.webhook.create(webhook_json, function (error, webhook) {
+    //     if (error) {
+    //       console.error(JSON.stringify(error.response));
+    //       throw error;
+    //     } else {
+    //       console.log('Create webhook Response');
+    //       console.log(webhook);
+    //     }
+    //   });
   
             res.status(200).send('....')
         } catch (error) {
@@ -283,3 +298,21 @@ exports.createorderwebhook = async (req, res) => {
     
     }
 
+exports.updatePaidUser = async (req,res) => {
+
+    try{
+        const id  = req.body.id;
+        console.log(`id`, id)
+        // const user = await User.findByIdAndUpdate(id);
+        
+        const user = await User.findByIdAndUpdate(id , {paid_at: new Date().toISOString(), UserType:"paid", UserTypeBool: true, new:true } )
+
+        if(user) return res.status(200).json({message : "Paid For Annual Subscription", userData: user});
+
+        console.log(`user`, user);
+
+
+    }catch (error) {
+        res.status(500).json({message : error})
+    }
+}

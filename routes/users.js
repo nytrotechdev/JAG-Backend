@@ -16,6 +16,8 @@ router.get('/usertype', userController.usertype);
 router.get('/get-created-order',  userController.getcreatedorder);
 router.post('/create-order',  userController.createorder);
 router.post('/create-order-webhook',  userController.createorderwebhook);
+
+router.post('/update-paid-user',  userController.updatePaidUser);
 // authMiddleware.auth,
 
 module.exports = router;
