@@ -19,16 +19,16 @@ exports.signin = async (req, res) => {
 
     try {
         const existingUser = await User.findOne({email});
-        if(!existingUser) return res.status(404).json({message : "user doesn't exist"});
+        if(!existingUser) return res.status(200).json({message : "user doesn't exist"});
 
         const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
-        if(!isPasswordCorrect) return res.status(400).json({message : "Invalid Credentials"})
+        if(!isPasswordCorrect) return res.status(200).json({message : "Invalid Credentials"})
 
         const token = jwt.sign({ email: existingUser.email, id:existingUser._id },  process.env.secret, {expiresIn: "3h"} );
 
         res.status(200).json({result : existingUser, token});
     } catch (error) {
-        res.status(500).json({message : " Something went wrong"})
+        res.status(500).json({message : " Something went wrong", error})
     }
 }
 
@@ -37,9 +37,9 @@ exports.signup = async (req, res) => {
     try {
         const existingUser = await User.findOne({email});
         
-        if(existingUser) return res.status(400).json({message : "user already exist"});
+        if(existingUser) return res.status(200).json({message : "user already exist"});
 
-        if(password !== confirmPassword ) return res.status(400).json({message : "passwords don't match"});
+        if(password !== confirmPassword ) return res.status(200).json({message : "passwords don't match"});
 
         const hashedPassword = await bcrypt.hash(password, 12)
 
@@ -69,11 +69,11 @@ exports.resetpassword = async (req, res) => {
     try {
         const schema = Joi.object({ email: Joi.string().email().required() });
         const { error } = schema.validate(req.body);
-        if (error) return res.status(400).send(error.details[0].message);
+        if (error) return res.status(200).send(error.details[0].message);
 
         const user = await User.findOne({ email: req.body.email });
         if (!user)
-            return res.status(400).send("user with given email doesn't exist");
+            return res.status(200).send("user with given email doesn't exist");
 
         let token = await Token.findOne({ userId: user._id });
         if (!token) {
@@ -99,17 +99,17 @@ exports.resetpasswordtoken = async (req, res) => {
             password: Joi.string().required()
         });
         const { error } = schema.validate(req.body);
-        if (error) return res.status(400).send(error.details[0].message);
+        if (error) return res.status(200).send(error.details[0].message);
         //  const parameters = req.params;
         const user = await User.findById(req.params.userid);
         // console.log(`user`, user);
-        if (!user) return res.status(400).send("invalid link or expired");
+        if (!user) return res.status(200).json({message : "invalid link or expired"})
 
         const token = await Token.findOne({
             userId: user._id,
             token: req.params.token,
         });
-        if (!token) return res.status(400).send("Invalid link or expired");
+        if (!token) return res.status(200).json({message : "invalid link or expired"});
         // console.log(`token`, token)
 
         const unencryptedpass = req.body.password;
@@ -118,9 +118,9 @@ exports.resetpasswordtoken = async (req, res) => {
 
         await user.save();
         await token.delete();
-        res.send("password reset sucessfully.");
+        res.status(200).json({message :"password reset sucessfully."});
     } catch (error) {
-        res.send("An error occured");
+        res.status(500).json({message : "An error occured", error})
         console.log(error);
     }
 }
@@ -161,7 +161,42 @@ exports.getcreatedorder = async (req, res) => {
 
 exports.createorder = async (req, res) => {
 
-const Environment = process.env.NODE_ENV === "production" ? paypal.core.LiveEnvironmen : paypal.core.SandboxEnvironment
+    // var webhook_json = {
+    //     url: 'https://jagapp.nytrotech.net/create-order-webhook',
+    //     event_types: [{
+    //       name: 'BILLING.SUBSCRIPTION.ACTIVATED'
+    //     },
+    //     {
+    //       name: 'BILLING.SUBSCRIPTION.UPDATED'
+    //     },
+    //     {
+    //       name: 'BILLING.SUBSCRIPTION.EXPIRED'
+    //     },
+    //     {
+    //       name: 'BILLING.SUBSCRIPTION.CANCELLED'
+    //     },
+    //     {
+    //       name: 'PAYMENT.ORDER.CREATED'
+    //     },
+    //     {
+    //       name: 'PAYMENT.CAPTURE.COMPLETED'
+    //     }
+    
+    
+    // ]
+    //   };
+
+    //   paypal.notification.webhook.create(webhook_json, function (error, webhook) {
+    //     if (error) {
+    //       console.error(JSON.stringify(error.response));
+    //       throw error;
+    //     } else {
+    //       console.log('Create webhook Response');
+    //       console.log(webhook);
+    //     }
+    //   });
+
+const Environment = process.env.NODE_ENV === "production" ? paypal.core.LiveEnvironment : paypal.core.SandboxEnvironment
 
 const paypalClient = new paypal.core.PayPalHttpClient(
 new Environment(
@@ -169,6 +204,15 @@ process.env.PAYPAL_CLIENT_ID,
 process.env.PAYPAL_CLIENT_SECRET
 )
 )
+
+const { id } = req.body;
+console.log(`id`, id)
+
+// if(!req.params.userid) return res.json({ message : 'Unauthenticated'})
+
+// const user = await User.findById();
+
+// console.log(`user`, req.params)
 
     const request = new paypal.orders.OrdersCreateRequest()
     request.prefer("return=representation")
@@ -179,19 +223,19 @@ process.env.PAYPAL_CLIENT_SECRET
             amount: {
                 currency_code: "USD",
                 value: 29,
-                breakdown: {
-                    AnnualSubscription: {
-                    currency_code: "USD",
-                    value: 29,
-                  },
-                },
+                // breakdown: {
+                //     AnnualSubscription: {
+                //     currency_code: "USD",
+                //     value: 29,
+                //   },
+                // },
             },
-            items: {
-                AnnualSubscription: {
-                currency_code: "USD",
-                value: 29,
-                 }
-            }
+            // items: {
+            //     AnnualSubscription: {
+            //     currency_code: "USD",
+            //     value: 29,
+            //      }
+            // }
           },
         ],
       })
@@ -199,20 +243,25 @@ process.env.PAYPAL_CLIENT_SECRET
     try {
         const order = await paypalClient.execute(request)
         // res.json({ id: order })
-        res.status(200).json({result : order})
-
         console.log(`order`, order);
+        res.status(200).json({createOrderResult : order})
 
-        if (res.status == 200){
-            const email =  "abdulbasit@gmail.com"
-            // const UserData = await User.findById({_id});
-            const UserData = await User.findOne({email});
-            // if(!User) return res.status(404).json({message : "user doesn't exist"});
 
-            const updatedUser = await User.findByIdAndUpdate(id, ...UserData, {paid_at: new Date().toISOString(), UserType:"paid", UserTypeBool: true, new:true } );
+        if (res.status == 200  || res.status == 201){
+
+            // console.log(`user`, user)
+            // const email =  "abdulbasit@nytrotech.com"
+            const UserData = await User.findById({id});
+            // const UserData = await User.findOne({email});
+            if(!UserData) return res.status(404).json({message : "user doesn't exist"});
+
+            console.log(`userData`, userData)
+            const updatedUser = await User.findByIdAndUpdate(UserData._id, ...UserData, {paid_at: new Date().toISOString(), UserType:"paid", UserTypeBool: true, new:true } );
     
             const userStatus = UserData.UserType;
             const userTypeStatus = UserData.UserTypeBool ;
+            // updatedUser.UserType = "paid";
+            // updatedUser.save();
     
             console.log(`Order + User data status`, UserData, updatedUser, userStatus, userTypeStatus);
         }
@@ -222,3 +271,15 @@ process.env.PAYPAL_CLIENT_SECRET
     }
 
 }
+
+exports.createorderwebhook = async (req, res) => {
+
+        try {
+  
+            res.status(200).send('....')
+        } catch (error) {
+            res.status(500).json({message : error})
+        }
+    
+    }
+
