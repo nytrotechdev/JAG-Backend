@@ -42,4 +42,5 @@ mongoose.connect(process.env.CONNECTION_URL,
 mongoose.set('useFindAndModify', false);
 
 
-
+// CONNECTION_URL = mongodb://localhost:27017/diamond
+// CONNECTION_URL = mongodb+srv://abdulbasit:abdulbasit@clustermem.z9kek.mongodb.net/diamond?retryWrites=true&w=majority

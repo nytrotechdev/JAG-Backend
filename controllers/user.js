@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
+const moment = require('moment');
+
 // const ObjectId = mongoose.Schema.Types.ObjectId;
 const paypal = require("@paypal/checkout-server-sdk");
 // require("dotenv").config()
@@ -12,6 +14,7 @@ const sendEmail = require("../utils/sendEmails");
 const crypto = require("crypto");
 const Joi = require("joi");
 const express = require("express");
+const { date } = require('joi');
 const router = express.Router();
 
 exports.signin = async (req, res) => {
@@ -25,15 +28,24 @@ exports.signin = async (req, res) => {
         if(!isPasswordCorrect) return res.status(200).json({message : "Invalid Credentials"})
 
 
-        if(existingUser){
-            console.log(`existingUser`, existingUser, existingUser.UserTypeBool, existingUser.UserType);
+        if(existingUser.UserTypeBool){
 
             const payDate = existingUser.paid_at
 
-            // const expiryDate = 
+            var expiryDate = new Date(payDate); 
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
-            var oneYearFromNow = new Date();
-            oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+            console.log(`expiryDate`, expiryDate.toISOString())
+
+          var DateToday = new Date();
+          console.log(`DateToday`, DateToday)
+
+
+if (DateToday == expiryDate){
+    const user = await User.findByIdAndUpdate(existingUser._id , {paid_at: null, UserType:"unpaid", UserTypeBool: false, new:true } )
+}
+
+
 
         }
 
@@ -42,7 +54,7 @@ exports.signin = async (req, res) => {
         res.status(200).json({result : existingUser, token});
 
     } catch (error) {
-        res.status(500).json({message : " Something went wrong", error})
+        res.status(500).json({message : " Something went wrong"})
     }
 }
 
@@ -137,33 +149,6 @@ exports.resetpasswordtoken = async (req, res) => {
         res.status(500).json({message : "An error occured", error})
         console.log(error);
     }
-}
-
-exports.usertype = async (req, res) => {
-    try {
-        // const {id} = req.params;
-        // const _id = 'ObjectId("6152cbc0a7e92c1768a6284b")';
-
-        const email =  "abdulbasit@c.com"
-        
-
-        // const UserData = await User.findById({_id});
-        const UserData = await User.findOne({email});
-        // if(!User) return res.status(404).json({message : "user doesn't exist"});
-   
-        
-        const userStatus = UserData.UserType;
-        const userTypeStatus = UserData.UserTypeBool ;
-
-        console.log(`User`, UserData, userStatus, userTypeStatus);
-
-        // 
-        res.status(200).json({result : {userStatus, userTypeStatus}});
-
-    } catch (error) {
-        res.status(500).json({message : " Something went wrong"})
-    }
-
 }
 
 exports.getcreatedorder = async (req, res) => {
@@ -305,7 +290,7 @@ exports.updatePaidUser = async (req,res) => {
         console.log(`id`, id)
         // const user = await User.findByIdAndUpdate(id);
         
-        const user = await User.findByIdAndUpdate(id , {paid_at: new Date().toISOString(), UserType:"paid", UserTypeBool: true, new:true } )
+        const user = await User.findByIdAndUpdate(id , {paid_at: moment().format("Do MMMM YYYY"), UserType:"paid", UserTypeBool: true, new:true } )
 
         if(user) return res.status(200).json({message : "Paid For Annual Subscription", userData: user});
 
@@ -315,4 +300,25 @@ exports.updatePaidUser = async (req,res) => {
     }catch (error) {
         res.status(500).json({message : error})
     }
+}
+
+exports.getUser = async (req, res) => {
+
+    try {
+
+        // const id = req.body.id;
+        const {id} = req.params;
+        
+        console.log(`id from getuser`, id, req.params._id, req.params)
+
+        const UserData = await User.findById(req.params)    
+        if(!UserData) return res.status(404).json({message : "user doesn't exist"});
+        
+        console.log(`User`, UserData);
+        res.status(200).json({result : UserData});
+
+    } catch (error) {
+        res.status(500).json({message : " Something went wrong"})
+    }
+
 }

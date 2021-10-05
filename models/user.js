@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
           default: false
      },        
      paid_at: { 
-          type: Date,
+          type: String,
      },
      resetPasswordLink: {
           data: String,

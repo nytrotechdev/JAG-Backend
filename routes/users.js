@@ -10,14 +10,13 @@ router.post('/resetpassword', userController.resetpassword);
 router.post('/passwordreset/:userid/:token', userController.resetpasswordtoken);
 
 router.post('/updateuser', userController.update);
-router.get('/usertype', userController.usertype);
-
 
 router.get('/get-created-order',  userController.getcreatedorder);
 router.post('/create-order',  userController.createorder);
 router.post('/create-order-webhook',  userController.createorderwebhook);
 
 router.post('/update-paid-user',  userController.updatePaidUser);
+router.get('/getuser/:id', userController.getUser);
 // authMiddleware.auth,
 
 module.exports = router;
