@@ -23,6 +23,12 @@ const userSchema = mongoose.Schema({
      paid_at: { 
           type: String,
      },
+     expires_at: { 
+          type: String,
+     },
+     date_today_at: { 
+          type: String,
+     },
      resetPasswordLink: {
           data: String,
           default: ''
