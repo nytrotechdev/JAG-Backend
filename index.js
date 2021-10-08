@@ -7,6 +7,7 @@ const paypal = require("@paypal/checkout-server-sdk")
 const router = express.Router();
 
 const userRoutes = require('./routes/users.js')
+const adminRoutes = require('./routes/admin.js')
 
 const app = express();
 dotenv.config();
@@ -29,6 +30,7 @@ router.get( "/", (req,res) => {
 })
 
 app.use('/user', userRoutes);
+app.use('/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5001;
 

@@ -1,23 +1,21 @@
 const { mongoose } = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 const User = require("../models/user");
+const Settings = require("../models/settings");
+const Payment = require("../models/payment");
+const Token = require("../models/token");
 
 const moment = require("moment");
-
-// const ObjectId = mongoose.Schema.Types.ObjectId;
-const paypal = require("@paypal/checkout-server-sdk");
-// require("dotenv").config()
-const Token = require("../models/token");
 const sendEmail = require("../utils/sendEmails");
-// const sendGridEmails = require("../utils/sendGridEmails");
 const crypto = require("crypto");
 const Joi = require("joi");
 const express = require("express");
 const { date } = require("joi");
 const router = express.Router();
 
-exports.signin = async (req, res) => {
+exports.adminSignin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -60,7 +58,7 @@ exports.signin = async (req, res) => {
   }
 };
 
-exports.signup = async (req, res) => {
+exports.adminSignup = async (req, res) => {
   const { email, password, confirmPassword, firstName, lastName } = req.body;
   try {
     const existingUser = await User.findOne({ email });
@@ -85,14 +83,6 @@ exports.signup = async (req, res) => {
       { expiresIn: "365d" }
     );
 
-    res.status(200).json({ result, token });
-  } catch (error) {
-    res.status(500).json({ message: " Something went wrong" });
-  }
-};
-
-exports.update = async (req, res) => {
-  try {
     res.status(200).json({ result, token });
   } catch (error) {
     res.status(500).json({ message: " Something went wrong" });
@@ -161,152 +151,78 @@ exports.resetpasswordtoken = async (req, res) => {
   }
 };
 
-exports.getcreatedorder = async (req, res) => {
-  res.render("index", {
-    paypalClientId: process.env.PAYPAL_CLIENT_ID,
-  });
-};
 
-exports.createorder = async (req, res) => {
-  const Environment =
-    process.env.NODE_ENV === "production"
-      ? paypal.core.LiveEnvironment
-      : paypal.core.SandboxEnvironment;
-
-  const paypalClient = new paypal.core.PayPalHttpClient(
-    new Environment(
-      process.env.PAYPAL_CLIENT_ID,
-      process.env.PAYPAL_CLIENT_SECRET
-    )
-  );
-
-  const { id } = req.body;
-  console.log(`id`, id);
-
-  // if(!req.params.userid) return res.json({ message : 'Unauthenticated'})
-
-  // const user = await User.findById();
-
-  // console.log(`user`, req.params)
-
-  const request = new paypal.orders.OrdersCreateRequest();
-  request.prefer("return=representation");
-  request.requestBody({
-    intent: "CAPTURE",
-    purchase_units: [
-      {
-        amount: {
-          currency_code: "USD",
-          value: 29,
-          // breakdown: {
-          //     AnnualSubscription: {
-          //     currency_code: "USD",
-          //     value: 29,
-          //   },
-          // },
-        },
-        // items: {
-        //     AnnualSubscription: {
-        //     currency_code: "USD",
-        //     value: 29,
-        //      }
-        // }
-      },
-    ],
-  });
-
+exports.createSubscriptionPackage = async (req, res) => {
   try {
-    const order = await paypalClient.execute(request);
-    // res.json({ id: order })
-    console.log(`order`, order);
-    res.status(200).json({ createOrderResult: order });
-
-    if (res.status == 200 || res.status == 201) {
-      // console.log(`user`, user)
-      // const email =  "abdulbasit@nytrotech.com"
-      const UserData = await User.findById({ id });
-      // const UserData = await User.findOne({email});
-      if (!UserData)
-        return res.status(404).json({ message: "user doesn't exist" });
-
-      console.log(`userData`, userData);
-      const updatedUser = await User.findByIdAndUpdate(
-        UserData._id,
-        ...UserData,
-        {
-          paid_at: new Date().toISOString(),
-          UserType: "paid",
-          UserTypeBool: true,
-          new: true,
-        }
-      );
-
-      const userStatus = UserData.UserType;
-      const userTypeStatus = UserData.UserTypeBool;
-      // updatedUser.UserType = "paid";
-      // updatedUser.save();
-
-      console.log(
-        `Order + User data status`,
-        UserData,
-        updatedUser,
-        userStatus,
-        userTypeStatus
-      );
-    }
-  } catch (error) {
-    res.status(500).json({ message: error });
-  }
-};
-
-exports.createorderwebhook = async (req, res) => {
-  try {
-    // var webhook_json = {
-    //     url: 'https://jagapp.nytrotech.net/create-order-webhook',
-    //     event_types: [{
-    //       name: 'BILLING.SUBSCRIPTION.ACTIVATED'
-    //     },
-    //     {
-    //       name: 'BILLING.SUBSCRIPTION.UPDATED'
-    //     },
-    //     {
-    //       name: 'BILLING.SUBSCRIPTION.EXPIRED'
-    //     },
-    //     {
-    //       name: 'BILLING.SUBSCRIPTION.CANCELLED'
-    //     },
-    //     {
-    //       name: 'PAYMENT.ORDER.CREATED'
-    //     },
-    //     {
-    //       name: 'PAYMENT.CAPTURE.COMPLETED'
-    //     }
-
-    // ]
-    //   };
-
-    //   paypal.notification.webhook.create(webhook_json, function (error, webhook) {
-    //     if (error) {
-    //       console.error(JSON.stringify(error.response));
-    //       throw error;
-    //     } else {
-    //       console.log('Create webhook Response');
-    //       console.log(webhook);
-    //     }
-    //   });
-
     res.status(200).send("....");
   } catch (error) {
     res.status(500).json({ message: error });
   }
 };
 
-exports.updatePaidUser = async (req, res) => {
+exports.updateSubscriptionPackage = async (req, res) => {
+  try {
+    res.status(200).send("....");
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
+exports.getAllSubscriptionPackages = async (req, res) => {
+  try {
+    res.status(200).send("....");
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
+exports.deleteSubscriptionPackage = async (req, res) => {
+  try {
+    res.status(200).send("....");
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
+
+
+exports.getAllUser = async (req, res) => {
+  try {
+    const { id } = req.query;
+    const UserData = await User.findById(id);
+    if (!UserData) return res.status(404).json({ message: "user doesn't exist" });
+
+    if (UserData.UserTypeBool) {
+    //   const payDate = UserData.paid_at;
+      const expiryDate  = UserData.expires_at;
+    //   var DateToday =  moment().format("Do MMMM YYYY");
+    var year  = new Date().getFullYear();
+    var month = new Date().getMonth();
+    var day   = new Date().getDate();
+    var DateToday  = new Date(year, month, day);
+
+    await User.findByIdAndUpdate(UserData._id , {date_today_at: DateToday , new:true } )
+    // console.log(`DateToday`, DateToday, "expiryDate", expiryDate)
+    const dateToday = UserData.date_today_at ;
+
+
+      if (dateToday == expiryDate){
+        //   console.log(`DateToday`, DateToday,"dateToday",dateToday, "expiryDate", expiryDate)
+          const user = await User.findByIdAndUpdate(UserData._id , {paid_at: null,expires_at: null, UserType:"unpaid", UserTypeBool: false, new:true } )
+      }
+    }
+
+   
+
+    // console.log(`User`, UserData);
+    res.status(200).json({ user: UserData });
+  } catch (error) {
+    res.status(500).json({ message: " Something went wrong" });
+  }
+};
+exports.updateUser = async (req, res) => {
   try {
     const id = req.body.id;
-    
-    const TransactionId = req.body.transactionId;
-    console.log(`id`, id, TransactionId);
+    console.log(`id`, id);
     // const user = await User.findByIdAndUpdate(id);
 
 
@@ -334,7 +250,6 @@ exports.updatePaidUser = async (req, res) => {
       UserType: "paid",
       UserTypeBool: true,
       new: true,
-      transactionId: TransactionId
     });
 
     // //setTimeout(() => {
@@ -367,40 +282,5 @@ exports.updatePaidUser = async (req, res) => {
     // console.log(`user`, user);
   } catch (error) {
     res.status(500).json({ message: error });
-  }
-};
-
-exports.getUser = async (req, res) => {
-  try {
-    const { id } = req.query;
-    const UserData = await User.findById(id);
-    if (!UserData) return res.status(404).json({ message: "user doesn't exist" });
-
-    if (UserData.UserTypeBool) {
-    //   const payDate = UserData.paid_at;
-      const expiryDate  = UserData.expires_at;
-    //   var DateToday =  moment().format("Do MMMM YYYY");
-    var year  = new Date().getFullYear();
-    var month = new Date().getMonth();
-    var day   = new Date().getDate();
-    var DateToday  = new Date(year, month, day);
-
-    await User.findByIdAndUpdate(UserData._id , {date_today_at: DateToday , new:true } )
-    // console.log(`DateToday`, DateToday, "expiryDate", expiryDate)
-    const dateToday = UserData.date_today_at ;
-
-
-      if (dateToday == expiryDate){
-        //   console.log(`DateToday`, DateToday,"dateToday",dateToday, "expiryDate", expiryDate)
-          const user = await User.findByIdAndUpdate(UserData._id , {paid_at: null,expires_at: null, UserType:"unpaid", UserTypeBool: false, new:true } )
-      }
-    }
-
-   
-
-    // console.log(`User`, UserData);
-    res.status(200).json({ user: UserData });
-  } catch (error) {
-    res.status(500).json({ message: " Something went wrong" });
   }
 };

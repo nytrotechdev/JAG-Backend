@@ -20,6 +20,7 @@ const userSchema = mongoose.Schema({
           type: Boolean,
           default: false
      },        
+     transactionId : {type: String, required: true},
      paid_at: { 
           type: String,
      },

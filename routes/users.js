@@ -19,6 +19,7 @@ router.post('/update-paid-user',  userController.updatePaidUser);
 
 // router.get('/getuser/:id', userController.getUser);
 router.get('/getuser', userController.getUser);
+
 // authMiddleware.auth,
 
 module.exports = router;
