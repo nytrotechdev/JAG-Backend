@@ -165,7 +165,7 @@ console.log(`id, amount, duration, currencyCode`, PackageId, Amount, Duration, C
 
     
     const packages = await Settings.create({
-      id: PackageId, 
+      packageId: PackageId, 
       amount : Amount, 
       duration: Duration, 
       currencyCode :  CurrencyCode

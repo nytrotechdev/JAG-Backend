@@ -307,9 +307,9 @@ exports.updatePaidUser = async (req, res) => {
     
     const TransactionId = req.body.transactionId;
     
-    const SubscriptionId = req.body.subscriptionId;
+    const PackageId = req.body.packageId;
 
-    console.log(`id`, id, TransactionId, SubscriptionId);
+    console.log(`id`, id, TransactionId, PackageId);
     // const user = await User.findByIdAndUpdate(id);
 
 
@@ -338,7 +338,8 @@ exports.updatePaidUser = async (req, res) => {
       UserTypeBool: true,
       new: true,
       transactionId: TransactionId,
-      subscriptionId: SubscriptionId
+      // subscriptionId: SubscriptionId,
+      packageId: PackageId
     });
 
     // //setTimeout(() => {

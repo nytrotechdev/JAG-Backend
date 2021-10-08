@@ -22,10 +22,11 @@ const userSchema = mongoose.Schema({
           default: false
      },        
      transactionId : {type: String},
-     subscriptionId: {
-          type: Schema.Types.ObjectId,
-          ref: "settings",
-      },
+     // subscriptionId: {
+     //      type: Schema.Types.ObjectId,
+     //      ref: "settingsSchema",
+     //  },
+     packageId:{type: String},
      paid_at: { 
           type: String,
      },
