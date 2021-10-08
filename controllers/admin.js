@@ -153,8 +153,25 @@ exports.resetpasswordtoken = async (req, res) => {
 
 
 exports.createSubscriptionPackage = async (req, res) => {
+
+  const PackageId = req.body.packageId;
+  const Amount = req.body.amount;
+  const Duration = req.body.duration;
+  const CurrencyCode = req.body.currencyCode;
+
+console.log(`id, amount, duration, currencyCode`, PackageId, Amount, Duration, CurrencyCode)
+  
   try {
-    res.status(200).send("....");
+
+    
+    const packages = await Settings.create({
+      id: PackageId, 
+      amount : Amount, 
+      duration: Duration, 
+      currencyCode :  CurrencyCode
+    });
+    res.status(200).json({packages: packages});
+   
   } catch (error) {
     res.status(500).json({ message: error });
   }
@@ -170,7 +187,11 @@ exports.updateSubscriptionPackage = async (req, res) => {
 
 exports.getAllSubscriptionPackages = async (req, res) => {
   try {
-    res.status(200).send("....");
+    
+    const packages = await Settings.find();   
+    if (packages) return res.status(200).json({ packages: packages });
+    if (!packages) return res.status(404).json({ message: "No Packages Available"});
+
   } catch (error) {
     res.status(500).json({ message: error });
   }

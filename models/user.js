@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Schema = mongoose.Schema;
 
 const userSchema = mongoose.Schema({
      name : {type: String, required: true},
@@ -20,7 +21,11 @@ const userSchema = mongoose.Schema({
           type: Boolean,
           default: false
      },        
-     transactionId : {type: String, required: true},
+     transactionId : {type: String},
+     subscriptionId: {
+          type: Schema.Types.ObjectId,
+          ref: "settings",
+      },
      paid_at: { 
           type: String,
      },
