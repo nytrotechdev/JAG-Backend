@@ -25,7 +25,7 @@ const sendEmail = async (email, subject, text) => {
             auth: {
                 // type: "login",
                 // type: 'OAuth2',
-                user: 'devjs999@gmail.com',
+                user: 'nytrotech.dev@gmail.com',
                 email: 'nytrotech.dev@gmail.com',
                 pass: 'Pakkhi_01',
                 // tls:{
