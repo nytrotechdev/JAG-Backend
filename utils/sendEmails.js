@@ -26,8 +26,8 @@ const sendEmail = async (email, subject, text) => {
                 // type: "login",
                 // type: 'OAuth2',
                 user: 'devjs999@gmail.com',
-                email: 'devjs999@gmail.com',
-                pass: '15PXcsvvsXT7cR;',
+                email: 'nytrotech.dev@gmail.com',
+                pass: 'Pakkhi_01',
                 // tls:{
                 //  rejectUnauthorized:false
                 // }
@@ -59,7 +59,7 @@ const sendEmail = async (email, subject, text) => {
         });
 
         await transporter.sendMail({
-            from: "abdul basit JAG Diamond APP",
+            from: "JAG Diamond APP",
             to: email,
             subject: subject,
             text: `
