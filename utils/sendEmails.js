@@ -25,9 +25,9 @@ const sendEmail = async (email, subject, text) => {
             auth: {
                 // type: "login",
                 // type: 'OAuth2',
-                user: 'devjs999@gmail.com',
-                email: 'devjs999@gmail.com',
-                pass: '15PXcsvvsXT7cR;',
+                // user: 'devjs999@gmail.com',
+                email: process.env.USER,
+                pass: process.env.PASS,
                 // tls:{
                 //  rejectUnauthorized:false
                 // }

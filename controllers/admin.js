@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const Admin = require("../models/admin");
 const Settings = require("../models/settings");
 const Payment = require("../models/payment");
 const Token = require("../models/token");
@@ -16,19 +17,24 @@ const { date } = require("joi");
 const router = express.Router();
 
 exports.adminSignin = async (req, res) => {
-  const { email, password } = req.body;
+  const data = req.body;
+
+  // console.log(req.body)
+
+  let email = data.email
+  let password = data.password
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await Admin.findOne({ email });
     if (!existingUser)
-      return res.status(200).json({ message: "user doesn't exist" });
+      return res.status(400).json({ message: "user doesn't exist" });
 
     const isPasswordCorrect = await bcrypt.compare(
       password,
       existingUser.password
     );
     if (!isPasswordCorrect)
-      return res.status(200).json({ message: "Invalid Credentials" });
+      return res.status(422).json({ message: "Invalid Credentials" });
 
     //         if(existingUser.UserTypeBool){
 
@@ -52,29 +58,28 @@ exports.adminSignin = async (req, res) => {
       process.env.secret,
       { expiresIn: "365d" }
     );
-    res.status(200).json({ result: existingUser, token });
+    res.status(200).json({ message:"Login" ,result: existingUser, token });
   } catch (error) {
     res.status(500).json({ message: " Something went wrong" });
   }
 };
 
 exports.adminSignup = async (req, res) => {
-  const { email, password, confirmPassword, firstName, lastName } = req.body;
+  const { email, password, confirmPassword} = req.body;
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await Admin.findOne({ email });
 
     if (existingUser)
-      return res.status(200).json({ message: "user already exist" });
+      return res.status(422).json({ message: "user already exist" });
 
     if (password !== confirmPassword)
-      return res.status(200).json({ message: "passwords don't match" });
+      return res.status(422).json({ message: "passwords don't match" });
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const result = await User.create({
+    const result = await Admin.create({
       email,
       password: hashedPassword,
-      name: `${firstName} ${lastName}`,
     });
 
     const token = jwt.sign(
@@ -154,25 +159,44 @@ exports.resetpasswordtoken = async (req, res) => {
 
 exports.createSubscriptionPackage = async (req, res) => {
 
-  const PackageId = req.body.packageId;
-  const Amount = req.body.amount;
-  const Duration = req.body.duration;
+  // const {  } = req.body;
+
+  // const PackageId = req.body.packageId;
+  const PackageName = req.body.packageName;
+  const Amount      = req.body.amount;
+  const Duration    = req.body.duration;
   const CurrencyCode = req.body.currencyCode;
 
-console.log(`id, amount, duration, currencyCode`, PackageId, Amount, Duration, CurrencyCode)
-  
-  try {
+  console.log(`req.body`, req.body)
 
-    
+  console.log(`Package, amount, duration, currencyCode`, PackageName, Amount, Duration, CurrencyCode)
+  
+  if (PackageName == undefined || PackageName == null || Amount  == (undefined || null) || Duration  == (undefined || null)){
+    return res.status(422).json({message: "please fill all fields"});
+    // res.send("please fill all fields");
+    // console.log(`message, "please fill all fields"`)
+  }
+
+
+const existingPackageName = await Settings.findOne({ PackageName });
+if (existingPackageName) return res.status(422).json({ message: "package name already exists" });
+
+  try {
     const packages = await Settings.create({
-      packageId: PackageId, 
-      amount : Amount, 
-      duration: Duration, 
-      currencyCode :  CurrencyCode
+      packageName: PackageName,
+      amount : Amount,
+      duration: Duration,
+      currencyCode :  CurrencyCode,
     });
+
     res.status(200).json({packages: packages});
    
   } catch (error) {
+
+    if(error.code == 11000){
+    // console.log(`error.code`, error.code)
+      return res.status(422).json({ message: "package name already exists" });
+    }
     res.status(500).json({ message: error });
   }
 };
@@ -199,7 +223,17 @@ exports.getAllSubscriptionPackages = async (req, res) => {
 
 exports.deleteSubscriptionPackage = async (req, res) => {
   try {
-    res.status(200).send("....");
+
+    const { id } = req.params;
+
+    // console.log(`id`, id)
+
+    const Packageid = await Settings.findById(id);
+    if (!Packageid) return res.status(404).json({ message: "package doesn't exist" });
+
+    Packageid.deleteOne();
+
+    res.status(200).send({ pid: Packageid, message: "deleted" });
   } catch (error) {
     res.status(500).json({ message: error });
   }

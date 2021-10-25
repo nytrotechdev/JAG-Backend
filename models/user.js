@@ -26,7 +26,8 @@ const userSchema = mongoose.Schema({
      //      type: Schema.Types.ObjectId,
      //      ref: "settingsSchema",
      //  },
-     packageId:{type: String},
+     // packageId:{type: String},
+     packageName:{type: String},
      paid_at: { 
           type: String,
      },
@@ -40,7 +41,23 @@ const userSchema = mongoose.Schema({
           data: String,
           default: ''
      },
-     created_at: { type: Date, required: true, default: Date.now }
+     created_at: { type: Date, required: true, default: Date.now },
+
+     countryCode: {
+          type: String,
+          required: true,
+      },
+      phone: {
+          type: String,
+          required: true,
+      },
+      verified: {
+          type: Boolean,
+          default: false,
+      },
+      authyId: {
+           type: String,
+      }
 
 });
 

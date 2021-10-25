@@ -17,6 +17,9 @@ const express = require("express");
 const { date } = require("joi");
 const router = express.Router();
 
+var accountSid = process.env.TWILIO_ACCOUNT_SID; 
+var authToken = process.env.TWILIO_AUTH_TOKEN;   
+
 exports.signin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -55,13 +58,15 @@ exports.signin = async (req, res) => {
       { expiresIn: "365d" }
     );
     res.status(200).json({ result: existingUser, token });
+    
   } catch (error) {
     res.status(500).json({ message: " Something went wrong" });
   }
 };
 
 exports.signup = async (req, res) => {
-  const { email, password, confirmPassword, firstName, lastName } = req.body;
+  const { email, password, confirmPassword, firstName, lastName, countryCode, phone } = req.body;
+  console.log(`req.body`, req.body)
   try {
     const existingUser = await User.findOne({ email });
 
@@ -77,6 +82,8 @@ exports.signup = async (req, res) => {
       email,
       password: hashedPassword,
       name: `${firstName} ${lastName}`,
+      countryCode,
+      phone
     });
 
     const token = jwt.sign(
@@ -87,7 +94,7 @@ exports.signup = async (req, res) => {
 
     res.status(200).json({ result, token });
   } catch (error) {
-    res.status(500).json({ message: " Something went wrong" });
+    res.status(500).json({ message: " Something went wrong", error: error });
   }
 };
 
@@ -307,9 +314,9 @@ exports.updatePaidUser = async (req, res) => {
     
     const TransactionId = req.body.transactionId;
     
-    const PackageId = req.body.packageId;
+    const PackageName = req.body.packageName;
 
-    console.log(`id`, id, TransactionId, PackageId);
+    console.log(`id`, id, TransactionId, PackageName);
     // const user = await User.findByIdAndUpdate(id);
 
 
@@ -327,8 +334,22 @@ exports.updatePaidUser = async (req, res) => {
     var year  = new Date().getFullYear();
     var month = new Date().getMonth();
     var day   = new Date().getDate();
-    var ExpiryDate  = new Date(year + 1, month, day);
-    console.log(`ExpiryDate`, ExpiryDate)
+
+
+if(PackageName === "Basic") {
+  var ExpiryDate  = new Date(year + 1, month, day);
+  console.log(`ExpiryDate`, ExpiryDate)
+}
+
+if(PackageName === "Standard") {
+  var ExpiryDate  = new Date(year + 2, month, day);
+  console.log(`ExpiryDate`, ExpiryDate)
+}
+
+if(PackageName === "Premium ") {
+  var ExpiryDate  = new Date(year + 3, month, day);
+  console.log(`ExpiryDate`, ExpiryDate)
+}
 
     const user = await User.findByIdAndUpdate(id, {
     //   paid_at: moment().format("Do MMMM YYYY"),
@@ -339,36 +360,12 @@ exports.updatePaidUser = async (req, res) => {
       new: true,
       transactionId: TransactionId,
       // subscriptionId: SubscriptionId,
-      packageId: PackageId
+      packageName: PackageName
     });
 
-    // //setTimeout(() => {
-    //     if(user.UserTypeBool){
-
-    //         const payDate = user.paid_at
-    //         var expiryDate = new Date(payDate);
-    //         expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-    //         console.log(`expiryDate`, expiryDate)
-
-    //         // var DateToday = new Date();
-    //         // console.log(`DateToday`, DateToday)
-    //         // if (DateToday == expiryDate){
-    //         // const user = await User.findByIdAndUpdate(user._id , {paid_at: null, UserType:"unpaid", UserTypeBool: false, new:true } )
-    //         // }
-
-    //         const updateduserEx = User.findByIdAndUpdate(id , {expires_at: expiryDate,  new:true } )
-
-    //         // console.log(updateduserEx,"updateduserEx");
-
-    //         if(user) return res.status(200).json({message : "Paid For Annual Subscription", updateduserEx: updateduserEx});
-    //         else return res.status(200).json({message : "user not found"});
-
-    //         }
-    // // }, 2000)
-
     if (user)
-      return res.status(200).json({ message: "Paid For Annual Subscription" });
-    else return res.status(200).json({ message: "user not found" });
+      return res.status(200).json({ message: `Paid For ${PackageName} Subscription` });
+      else return res.status(200).json({ message: "user not found" });
     // console.log(`user`, user);
   } catch (error) {
     res.status(500).json({ message: error });
@@ -409,3 +406,57 @@ exports.getUser = async (req, res) => {
     res.status(500).json({ message: " Something went wrong" });
   }
 };
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    
+    const UserData = await User.find();
+    if (!UserData) return res.status(404).json({ message: "no user exist" });
+
+      // console.log(`User`, UserData);
+    res.status(200).json({ user: UserData });
+  } catch (error) {
+    res.status(500).json({ message: " Something went wrong" });
+  }
+};
+
+exports.getPaidUser = async (req, res) => {
+  try {
+    const UserData = await User.find().where({UserTypeBool: true});
+    if (!UserData) return res.status(404).json({ message: "no user exist" });
+
+
+    res.status(200).json({ user: UserData });
+  } catch (error) {
+    res.status(500).json({ message: " Something went wrong" });
+  }
+};
+exports.getUnpaidUser = async (req, res) => {
+  try {
+    const UserData = await User.find().where({UserTypeBool: false});
+    if (!UserData) return res.status(404).json({ message: "no user exist" });
+    res.status(200).json({ user: UserData });
+  } catch (error) {
+    res.status(500).json({ message: " Something went wrong" });
+  }
+};
+
+exports.otpCode = async (req, res) => {
+
+  let msgBody = req.body;
+
+  const client = require('twilio')(accountSid, authToken);
+
+  await client.messages.create({
+    body: `message body is ${req.body}`, 
+    // from: '+12677547858', 
+    // to: '+923160386368'
+    from: 'whatsapp:+14155238886',       
+    to: 'whatsapp:+923413400630'
+  })
+  .then(message => {
+    res.status(200).json({ message: message.sid, result: msgBody })
+  })
+  .catch((err) => console.log(err))
+
+}

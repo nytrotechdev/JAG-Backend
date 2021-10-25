@@ -10,9 +10,9 @@ router.post('/resetpassword', adminController.resetpassword);
 router.post('/passwordreset/:userid/:token', adminController.resetpasswordtoken);
 
 router.post('/create-package', adminController.createSubscriptionPackage);
-router.put('/update-package',  adminController.updateSubscriptionPackage);
+router.put('/update-package/:id',  adminController.updateSubscriptionPackage);
 router.get('/get-all-packages',  adminController.getAllSubscriptionPackages);
-router.delete('/delete-package',  adminController.deleteSubscriptionPackage);
+router.delete('/delete-package/:id',  adminController.deleteSubscriptionPackage);
 
 router.get('/get-all-user', adminController.getAllUser);
 // router.get('/getuser/:id', adminController.getUser);
