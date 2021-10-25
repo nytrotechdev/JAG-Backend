@@ -59,7 +59,7 @@ const sendEmail = async (email, subject, text) => {
         });
 
         await transporter.sendMail({
-            from: "abdul basit JAG Diamond APP",
+            from: "JAG Diamond APP",
             to: email,
             subject: subject,
             text: `
