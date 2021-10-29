@@ -431,6 +431,19 @@ exports.getPaidUser = async (req, res) => {
     res.status(500).json({ message: " Something went wrong" });
   }
 };
+
+exports.getPaidUserPackageName = async (req, res) => {
+  try {
+    const UserData = await User.find().where({UserTypeBool: true , packageName : 'Basic'});
+    if (!UserData) return res.status(404).json({ message: "no user exist" });
+
+
+    res.status(200).json({ user: UserData });
+  } catch (error) {
+    res.status(500).json({ message: " Something went wrong" });
+  }
+};
+
 exports.getUnpaidUser = async (req, res) => {
   try {
     const UserData = await User.find().where({UserTypeBool: false});

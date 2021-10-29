@@ -94,6 +94,69 @@ exports.adminSignup = async (req, res) => {
   }
 };
 
+exports.updateAdminProfile = async (req,res) => {
+  try {
+
+    // const editprofileid  =  req.params.id;
+
+    const proflieData = req.body;
+
+    let Email = "admin@admin.com"
+
+    let Name = req.body.name;
+    let Password = req.body.password;
+    let ConfirmPassword = req.body.confirmPassword;
+
+    console.log(`data and editid`,  proflieData)
+
+    // const existingUser = await Admin.findOne({ email });
+
+    // if (!existingUser) return res.status(422).json({ message: "user doesn't exist" });
+
+    if (Password !== ConfirmPassword)  return res.status(422).json({ message: "passwords don't match" });
+
+    const hashedPassword = await bcrypt.hash(Password, 12);
+
+    // const result = await Admin.create({
+    //   email,
+    //   password: hashedPassword,
+    // });
+
+
+    const profile = await Admin.findOneAndUpdate({email : Email}, {name: Name, password: hashedPassword});
+    
+    console.log(`profile`, profile)
+
+    if (profile) return res.status(200).json({ profileUpdated: profile });
+
+    // if (!package) return res.status(404).json({ message: "No Packages Available"});
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+}
+
+exports.getAdminData= async (req,res) => {
+  try{
+    
+    let Email = "admin@admin.com"
+
+    const profile = await Admin.findOne({ email: "admin@admin.com" });
+    
+    console.log(`profile`, profile)
+
+    if(profile) return res.status(200).json({ profileData: profile });
+
+    if(!profile) return res.status(404).json({ message: "profile not found" });
+    
+
+   
+
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+}
+
+
 exports.resetpassword = async (req, res) => {
   try {
     const schema = Joi.object({ email: Joi.string().email().required() });
@@ -202,13 +265,51 @@ if (existingPackageName) return res.status(422).json({ message: "package name al
 };
 
 exports.updateSubscriptionPackage = async (req, res) => {
+
   try {
-    res.status(200).send("....");
+
+    const editpackageid  =  req.params.id;
+
+    const packageData = req.body;
+
+    let Amount = req.body.amount;
+    let Duration = req.body.duration;
+  
+    console.log(`data and editpackageid`, packageData, editpackageid, Amount)
+
+    // const package = await Settings.findOneAndUpdate({_id: packageDetailId},{ $set: { amount:  req.body.amount } },);  
+
+    const package = await Settings.findByIdAndUpdate(editpackageid, {amount: Amount, duration: Duration});
+    
+    console.log(`package`, package)
+
+    if (package) return res.status(200).json({ packageUpdated: package });
+
+    // if (!package) return res.status(404).json({ message: "No Packages Available"});
   } catch (error) {
     res.status(500).json({ message: error });
   }
 };
 
+exports.SubscriptionPackageDetails = async (req, res) => {
+  try {
+    
+    const packageDetailId = req.params.id;
+
+    console.log(`packageDetailId`, packageDetailId);
+
+    const package = await Settings.findById(packageDetailId);  
+    
+    console.log(`package`, package)
+
+    if (package) return res.status(200).json({ packageDetails: package });
+
+    if (!package) return res.status(404).json({ message: "No Packages Available"});
+
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+};
 exports.getAllSubscriptionPackages = async (req, res) => {
   try {
     
@@ -274,6 +375,8 @@ exports.getAllUser = async (req, res) => {
     res.status(500).json({ message: " Something went wrong" });
   }
 };
+
+
 exports.updateUser = async (req, res) => {
   try {
     const id = req.body.id;
